@@ -1,8 +1,9 @@
 ﻿using JinnDev.Utilities.Monad;
+using SoftwareVersioner.Core;
 
 namespace SoftwareVersioner.Client.Services;
 
 public interface IHttpSvc
 {
-    Task<Maybe<string>> ProcessNameAsync(string? name);
+    Task<Maybe<List<Software>>> GetAllSoftwareAsync();
 }

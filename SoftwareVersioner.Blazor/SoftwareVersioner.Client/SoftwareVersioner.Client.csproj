@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
@@ -15,7 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\SoftwareVersioner.Shared\SoftwareVersioner.Shared.csproj" />
+		<ProjectReference Include="..\..\SoftwareVersioner.Core\SoftwareVersioner.Core.csproj" />
 	</ItemGroup>
 
 </Project>

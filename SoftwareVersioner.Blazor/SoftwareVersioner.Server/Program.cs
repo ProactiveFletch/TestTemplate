@@ -1,6 +1,10 @@
+using SoftwareVersioner;
+using SoftwareVersioner.Core.Interfaces;
 using SoftwareVersioner.Server.Components;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<ISoftwareManager>(x => new SoftwareManager());
 
 builder.Services.AddControllers();
 

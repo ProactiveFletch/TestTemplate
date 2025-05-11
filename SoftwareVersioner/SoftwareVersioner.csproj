@@ -8,7 +8,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SoftwareVersioner.Core\SoftwareVersioner.Core.csproj" />
-		<ProjectReference Include="..\SoftwareVersioner.Data.Core\SoftwareVersioner.Data.Core.csproj" />
 	</ItemGroup>
 
 </Project>

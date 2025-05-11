@@ -1,22 +1,26 @@
 ﻿using JinnDev.Utilities.Monad;
+using SoftwareVersioner.Core;
 using System.Net.Http.Json;
 using System.Text.Json;
+using static System.Net.WebRequestMethods;
 
 namespace SoftwareVersioner.Client.Services;
 
 public class HttpSvc(HttpClient HttpClient) : IHttpSvc
 {
-    public async Task<Maybe<string>> ProcessNameAsync(string? name)
+    public async Task<Maybe<List<Software>>> GetAllSoftwareAsync()
     {
         string errMsg;
         try
         {
-            HttpResponseMessage response = await HttpClient.PostAsJsonAsync("/api/name", name);
+            HttpResponseMessage response = await HttpClient.GetAsync("api/software/all");
 
             if (response.IsSuccessStatusCode)
             {
-                string? processedName = await response.Content.ReadAsStringAsync();
-                return processedName;
+                var softwareList = await response.Content.ReadFromJsonAsync<List<Software>>();
+                if (softwareList != null)
+                    return softwareList;
+                errMsg = $"API Returned Null";
             }
             else
             {
@@ -37,6 +41,6 @@ public class HttpSvc(HttpClient HttpClient) : IHttpSvc
             errMsg = $"An unexpected error occurred: {ex.Message}";
         }
 
-        return Maybe.None<string>(errMsg);
+        return Maybe.None<List<Software>>(errMsg);
     }
 }
