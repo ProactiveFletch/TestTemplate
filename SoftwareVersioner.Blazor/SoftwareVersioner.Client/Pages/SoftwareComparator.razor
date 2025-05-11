@@ -5,104 +5,156 @@
 @using System.Net.Http.Json
 
 <PageTitle>Software Version Comparator</PageTitle>
+<div class="sv-container">
+    @if (httpSvcInitializationError != null && _isHttpSvcInitialized)
+    {
+        <div class="sv-message-area error" style="margin-top: 1rem;">
+            <strong>Application Initialization Error:</strong> @httpSvcInitializationError
+        </div>
+    }
+    else
+    {
+        @* Normal UI when HttpSvc is available *@
+        <div class="sv-header">
+            <h1>Software Version Comparator</h1>
+        </div>
 
-<h1>Software Version Comparator</h1>
-<p>Enter a version number to find software products with a greater version.</p>
+        <p class="sv-description">
+            Enter a version number (e.g., <code>1.2.3</code> or <code>.0.1</code>) to find software products
+            from our catalog that have a version greater than the one you entered.
+        </p>
 
-<div class="mb-3">
-    <div class="input-group">
-        <input @bind="userInputVersion" class="form-control" placeholder="e.g., 1.2.3 or .0.1" @onkeyup="HandleKeyUp" />
-        <button class="btn btn-primary" @onclick="FindSoftwareAsync" disabled="@isLoading">
-            @if (isLoading)
-            {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                <text> Loading...</text>
-            }
-            else
-            {
-                <text>Find Software</text>
-            }
-        </button>
-    </div>
-</div>
+        <div class="sv-input-group">
+            <input type="text" @bind="userInputVersion" @bind:event="oninput" placeholder="Enter version..." @onkeyup="HandleKeyUp" aria-label="Software version input" />
+            <button class="sv-button" @onclick="FindSoftwareAsync" disabled="@(isLoading || (_isHttpSvcInitialized == false && httpSvcInitializationError == null))">
+                @if (isLoading)
+                {
+                    <span class="spinner"></span>
+                    <span>Searching...</span>
+                }
+                else
+                {
+                    <span>Find Software</span>
+                }
+            </button>
+        </div>
 
-@if (!string.IsNullOrEmpty(uiMessage))
-{
-    <div class="alert @(isError ? "alert-danger" : "alert-info") mt-3" role="alert">
-        @((MarkupString)uiMessage) <!-- Allow HTML for multiple lines -->
-    </div>
-}
-
-@if (productParsingMessages.Any())
-{
-    <div class="alert alert-warning mt-3" role="alert">
-        <strong>Product Data Issues:</strong>
-        <ul>
-            @foreach (var msg in productParsingMessages)
-            {
-                <li>@msg</li>
-            }
-        </ul>
-    </div>
-}
-
-
-@if (filteredSoftware != null && filteredSoftware.Any())
-{
-    <h3 class="mt-4">Results</h3>
-    <ul class="list-group">
-        @foreach (var software in filteredSoftware)
+        @if (!string.IsNullOrEmpty(uiMessage))
         {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                @software.Name
-                <span class="badge bg-secondary rounded-pill">@software.Version</span>
-            </li>
+            <div class="sv-message-area @(isError ? "error" : "info")">
+                @((MarkupString)uiMessage)
+            </div>
         }
-    </ul>
-}
-else if (hasSearched && !isLoading && string.IsNullOrEmpty(uiMessage) && (filteredSoftware == null || !filteredSoftware.Any()))
-{
-    <div class="alert alert-info mt-3" role="alert">
-        No software products found with a version greater than "@lastSearchedVersionForDisplay".
-    </div>
-}
+
+        @if (productParsingMessages.Any())
+        {
+            <div class="sv-message-area warning">
+                <strong>Data Inconsistencies:</strong>
+                <p style="margin-bottom:0.2rem; margin-top:0.3rem;">Some product versions in our catalog could not be parsed correctly:</p>
+                <ul>
+                    @foreach (var msg in productParsingMessages)
+                    {
+                        <li>@msg</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @if (filteredSoftware != null && filteredSoftware.Any())
+        {
+            <h3 class="sv-results-header">Matching Software</h3>
+            <ul class="sv-results-list">
+                @foreach (var software in filteredSoftware)
+                {
+                    <li>
+                        <span class="name">@software.Name</span>
+                        <span class="version">@software.Version</span>
+                    </li>
+                }
+            </ul>
+        }
+        else if (hasSearched && !isLoading && string.IsNullOrEmpty(uiMessage) && (filteredSoftware == null || !filteredSoftware.Any()))
+        {
+            <div class="sv-no-results">
+                <div class="heading">No Matches Found</div>
+                <p class="text">No software products found with a version greater than "<strong>@lastSearchedVersionForDisplay</strong>".</p>
+            </div>
+        }
+
+        @if (hasSearched || !string.IsNullOrEmpty(uiMessage) || productParsingMessages.Any())
+        {
+            <div class="sv-footer-note">
+                Search criteria: @(string.IsNullOrWhiteSpace(lastSearchedVersionForDisplay) ? "N/A" : lastSearchedVersionForDisplay)
+            </div>
+        }
+    }
+</div>
 
 @code {
     private string? userInputVersion;
-    private string? uiMessage; // For user input validation or HTTP errors
-    private List<string> productParsingMessages = new List<string>(); // For issues with product data itself
+    private string? uiMessage;
+    private List<string> productParsingMessages = new List<string>();
 
     private bool isError;
-    private bool isLoading = true;
+    private bool isLoading = false; // Reflects the search operation status
     private bool hasSearched;
     private string? lastSearchedVersionForDisplay;
+    private string? httpSvcInitializationError; // Specific error for HttpSvc init
 
-    private List<Software>? allSoftwareFromSource;
+    // No longer caching allSoftwareFromSource as a component field for the whole list
     private List<Software>? filteredSoftware;
 
     private IHttpSvc? _httpSvc;
+    private bool _isHttpSvcInitialized = false; // Track if we've tried to get HttpSvc
 
+    // OnInitialized can be used for synchronous setup
     protected override void OnInitialized()
     {
-        _httpSvc = ServiceProvider.GetService<IHttpSvc>();
-        isLoading = _httpSvc == null;
+        // Any purely synchronous setup can go here if needed.
         base.OnInitialized();
+    }
+
+    // OnAfterRenderAsync for DI resolution that might need the component to be fully attached
+    protected override void OnAfterRender(bool firstRender) // Can be sync if just getting service
+    {
+        if (firstRender && !_isHttpSvcInitialized)
+        {
+            _httpSvc = ServiceProvider.GetService<IHttpSvc>();
+            if (_httpSvc == null)
+            {
+                // This is a critical failure. Display a persistent error.
+                httpSvcInitializationError = "Core application services could not be initialized. Please try refreshing the page or contact support if the issue persists.";
+            }
+            _isHttpSvcInitialized = true;
+            StateHasChanged(); // Re-render to show error or enable UI
+        }
+        base.OnAfterRender(firstRender);
     }
 
     private void HandleKeyUp(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
-            _ = FindSoftwareAsync(); // Fire and forget is okay for UI event
+            _ = FindSoftwareAsync(); // Fire and forget is fine for UI event
         }
     }
 
     private async Task FindSoftwareAsync()
     {
+        if (!_isHttpSvcInitialized) // Still waiting for OnAfterRender to attempt HttpSvc init
+        {
+            uiMessage = "Application is initializing, please wait...";
+            isError = false;
+            StateHasChanged();
+            return;
+        }
+
         if (_httpSvc == null)
         {
-            uiMessage = "HttpSvc not initialized. Please refresh.";
+            // httpSvcInitializationError should already be set and displayed
+            uiMessage = httpSvcInitializationError; // Reinforce or ensure it's shown
             isError = true;
+            StateHasChanged();
             return;
         }
 
@@ -112,12 +164,10 @@ else if (hasSearched && !isLoading && string.IsNullOrEmpty(uiMessage) && (filter
         filteredSoftware = null;
         productParsingMessages.Clear();
         hasSearched = true;
-        // lastSearchedVersionForDisplay will be set after input validation
-
-        StateHasChanged();
+        StateHasChanged(); // Show search loading state
 
         var userVersionResult = FunctionalSvc.ProcessUserVersionInput(userInputVersion);
-        lastSearchedVersionForDisplay = userVersionResult.OriginalInput; // Use original (trimmed) for display
+        lastSearchedVersionForDisplay = userVersionResult.OriginalInput;
 
         if (!userVersionResult.IsValid || userVersionResult.VersionArray == null)
         {
@@ -128,33 +178,47 @@ else if (hasSearched && !isLoading && string.IsNullOrEmpty(uiMessage) && (filter
             return;
         }
 
-        // Fetch all software if not already fetched or if we want to refresh it
-        // For this simple case, let's fetch it every time. Could optimize by caching.
+        // Fetch software data on every search
+        List<Software>? currentSoftwareList = null;
         var maybeSoftware = await _httpSvc.GetAllSoftwareAsync();
+
+        bool fetchError = false;
         maybeSoftware.Match(
             some =>
             {
-                allSoftwareFromSource = some;
+                currentSoftwareList = some;
             },
             none =>
             {
-                uiMessage = none.Message;
+                uiMessage = $"Error fetching software catalog: {none.Message}";
+                // Potentially log none.Exception if available for diagnostics
                 isError = true;
-                isLoading = false;
-                StateHasChanged();
-            });
+                fetchError = true;
+            }
+        );
 
-        if (allSoftwareFromSource == null || !allSoftwareFromSource.Any())
+        if (fetchError)
         {
-            uiMessage = "No software data retrieved from the server.";
-            isError = false; // Info message
             isLoading = false;
             StateHasChanged();
             return;
         }
 
-        filteredSoftware = FunctionalSvc.FilterSoftwareList(allSoftwareFromSource, userVersionResult.VersionArray, out var parsingErrors);
-        productParsingMessages.AddRange(parsingErrors);
+        if (currentSoftwareList == null || !currentSoftwareList.Any())
+        {
+            uiMessage = "No software data retrieved from the server or catalog is empty.";
+            isError = false; // Informational, not necessarily an error if catalog is legitimately empty
+            // No results will be shown by the UI logic for filteredSoftware
+        }
+        else
+        {
+            filteredSoftware = FunctionalSvc.FilterSoftwareList(
+                currentSoftwareList,
+                userVersionResult.VersionArray,
+                out var parsingErrors
+            );
+            productParsingMessages.AddRange(parsingErrors);
+        }
 
         isLoading = false;
         StateHasChanged();

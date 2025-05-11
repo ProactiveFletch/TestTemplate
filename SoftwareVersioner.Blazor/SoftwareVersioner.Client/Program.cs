@@ -10,10 +10,8 @@ builder.Services.AddHttpClient("MyApiHttpClient", client =>
 
 builder.Services.AddScoped<IHttpSvc>(sp =>
 {
-    Console.WriteLine("Lol2");
     var hcfac = sp.GetRequiredService<IHttpClientFactory>();
     return new HttpSvc(hcfac.CreateClient("MyApiHttpClient"));
 });
-Console.WriteLine("Lol");
 
 await builder.Build().RunAsync();
