@@ -107,13 +107,6 @@
     private IHttpSvc? _httpSvc;
     private bool _isHttpSvcInitialized = false; // Track if we've tried to get HttpSvc
 
-    // OnInitialized can be used for synchronous setup
-    protected override void OnInitialized()
-    {
-        // Any purely synchronous setup can go here if needed.
-        base.OnInitialized();
-    }
-
     // OnAfterRenderAsync for DI resolution that might need the component to be fully attached
     protected override void OnAfterRender(bool firstRender) // Can be sync if just getting service
     {
@@ -180,6 +173,7 @@
 
         // Fetch software data on every search
         List<Software>? currentSoftwareList = null;
+        // Loaded on each call instead of on page load, in preparation of discussed paging of larger datasets later.
         var maybeSoftware = await _httpSvc.GetAllSoftwareAsync();
 
         bool fetchError = false;
