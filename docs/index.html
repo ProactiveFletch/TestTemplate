@@ -6,122 +6,241 @@
     <title>Software Version Search Portal</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
             margin: 0;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            background-color: #f4f7f9;
+            background-color: #f4f7f9; /* Light background for the page */
             color: #333;
             line-height: 1.6;
         }
-        .container {
-            width: 90%;
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 25px;
-            background-color: #fff;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border-radius: 8px;
-        }
+
         main {
             flex: 1;
         }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-top: 0;
-            margin-bottom: 25px;
-            font-weight: 600;
+
+        /* sv- styles adapted from Blazor version */
+        .sv-container {
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 0; /* Padding will be on sv-card-body */
+            background-color: #f9f9f9; /* Match Blazor card container */
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        .search-form {
+
+        .sv-header {
+            background-color: #4A90E2; /* Blue from Blazor */
+            color: white;
+            padding: 1rem 1.5rem;
+            border-top-left-radius: 8px; /* Match container's radius */
+            border-top-right-radius: 8px;
+        }
+        .sv-header h1 { /* Target h1 within sv-header */
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 500;
+            text-align: left; /* Blazor style was left */
+        }
+
+        .sv-card-body { /* New class for inner padding */
+            padding: 1.5rem;
+        }
+
+        .sv-description {
+            color: #555;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .sv-description code {
+            background-color: #e8e8e8;
+            padding: 0.1em 0.4em;
+            border-radius: 3px;
+            font-family: "Courier New", Courier, monospace;
+        }
+
+        .sv-input-group { /* Replaces .search-form */
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
         }
-        #versionInput {
+
+        .sv-input-group input[type="text"] { /* Targets #versionInput */
             flex-grow: 1;
-            padding: 12px 15px;
-            border: 1px solid #ced4da;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 16px;
+            font-size: 1rem;
             transition: border-color 0.2s;
         }
-        #versionInput:focus {
-            border-color: #3498db;
+        .sv-input-group input[type="text"]:focus {
+            border-color: #4A90E2;
             outline: none;
-            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
         }
-        #searchButton {
-            padding: 12px 25px;
-            background-color: #3498db;
+
+        .sv-button { /* Targets #searchButton */
+            padding: 0.75rem 1.5rem;
+            background-color: #4CAF50; /* Green from Blazor */
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 1rem;
             font-weight: 500;
             transition: background-color 0.2s;
+            white-space: nowrap;
         }
-        #searchButton:hover {
-            background-color: #2980b9;
+        .sv-button:hover {
+            background-color: #45a049;
         }
-        .error-message-container {
-            margin-bottom: 15px;
+        .sv-button:disabled { /* Added from Blazor for consistency */
+            background-color: #ccc;
+            cursor: not-allowed;
         }
-        .error-message {
-            color: #c0392b; /* Darker red for better contrast */
-            background-color: #fdecea;
-            border: 1px solid #e74c3c;
-            padding: 10px 15px;
+        .sv-button .spinner { /* Added from Blazor */
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            vertical-align: -0.125em;
+            border: .2em solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: sv-spinner-border .75s linear infinite;
+            margin-right: 0.5em;
+        }
+        @keyframes sv-spinner-border { /* Renamed to avoid conflict */
+          to { transform: rotate(360deg); }
+        }
+
+        /* Message Area styling from Blazor */
+        .sv-message-area-container { /* Wrapper for messages */
+             margin-bottom: 1.5rem;
+        }
+        .sv-message-area {
+            margin-top: 1rem; /* Applied to individual message blocks */
+            padding: 0.75rem 1rem;
             border-radius: 4px;
-            font-size: 0.9em;
+            font-size: 0.9rem;
         }
-        .error-message ul {
+        .sv-message-area.error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #f44336;
+        }
+        .sv-message-area.info { /* For "no results" if styled this way */
+            background-color: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #2196f3;
+        }
+         .sv-message-area.warning { /* For unit test data inconsistencies */
+            background-color: #fff3e0;
+            color: #ef6c00;
+            border: 1px solid #ff9800;
+        }
+        .sv-message-area ul { /* For error list */
             margin: 0;
             padding-left: 20px;
         }
-        #resultsTable {
+        .sv-message-area.warning ul {
+            margin-top: 0.5rem;
+            margin-bottom: 0;
+            padding-left: 1.2rem;
+        }
+
+        /* Results styling - Table to look like Blazor list */
+        .sv-results-header {
+            font-size: 1.4rem;
+            color: #333;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #4A90E2; /* Blue from Blazor */
+            padding-bottom: 0.5rem;
+        }
+        #resultsTable { /* The table itself */
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+            border-collapse: separate; /* Allows border-radius on cells/rows */
+            border-spacing: 0;
+            margin-top: 0; /* sv-results-header provides top margin */
         }
-        #resultsTable th, #resultsTable td {
-            border: 1px solid #e0e0e0;
-            padding: 12px 15px;
-            text-align: left;
+        #resultsTable th { /* Table headers */
+            display: none; /* Hide traditional table headers to mimic list */
         }
-        #resultsTable th {
-            background-color: #ecf0f1;
-            color: #2c3e50;
+        #resultsTable tr { /* Table rows to act like list items */
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-bottom-width: 0;
+        }
+        #resultsTable tr:first-child td:first-child { border-top-left-radius: 4px; }
+        #resultsTable tr:first-child td:last-child { border-top-right-radius: 4px; }
+        #resultsTable tr:last-child { border-bottom-width: 1px; }
+        #resultsTable tr:last-child td:first-child { border-bottom-left-radius: 4px; }
+        #resultsTable tr:last-child td:last-child { border-bottom-right-radius: 4px; }
+
+        #resultsTable td {
+            padding: 0.75rem 1rem;
+            display: flex; /* Use flex to align name and version badge */
+            justify-content: space-between;
+            align-items: center;
+            border: none; /* Borders are on TR now */
+        }
+        /* Spans inside TD will get these classes from JS */
+        .sv-results-list .name { /* Class for name span */
             font-weight: 600;
+            color: #333;
         }
-        #resultsTable tr:nth-child(even) {
-            background-color: #f9f9f9;
+        .sv-results-list .version { /* Class for version span */
+            font-size: 0.85em;
+            color: #fff;
+            background-color: #777; /* Gray badge from Blazor */
+            padding: 0.2em 0.6em;
+            border-radius: 10px;
         }
-        #noResultsMessage {
-            margin-top: 20px;
+
+        /* No Results Message styling from Blazor */
+        .sv-no-results { /* Targets #noResultsMessage */
+            background-color: #f0f0f0;
+            border: 1px solid #dcdcdc;
+            padding: 2rem;
+            margin-top: 1.5rem; /* After where results would be */
             text-align: center;
-            color: #7f8c8d;
-            padding: 15px;
-            background-color: #f8f9fa;
             border-radius: 4px;
         }
-        footer {
+        .sv-no-results .heading {
+            font-size: 1.2rem;
+            color: #444;
+            margin-bottom: 0.5rem;
+        }
+        .sv-no-results .text {
+            color: #666;
+        }
+
+
+        /* Footer and Footer Note */
+        footer { /* Page footer */
             text-align: center;
             padding: 20px 0;
-            background-color: #2c3e50;
+            background-color: #2c3e50; /* Original dark footer */
             color: #ecf0f1;
             font-size: 0.9em;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 20px; /* Increased gap */
+            gap: 20px;
         }
-        .footer-content {
-            /* flex-grow: 1; */ 
+        .sv-footer-note { /* For search criteria display */
+            margin-top: 1.5rem;
+            font-size: 0.8em;
+            color: #888;
+            text-align: center;
+            border-top: 1px dashed #ddd;
+            padding-top: 1rem;
         }
-        #testToggleIcon {
+        #testToggleIcon { /* Retain original styling for cog */
             cursor: pointer;
             font-size: 1.6em;
             padding: 5px; 
@@ -133,16 +252,23 @@
             color: #5dade2; 
         }
 
+
+        /* Unit Test Section - minimal changes, mostly container */
         #unitTestSectionContainer {
-            background-color: #e9ecef; 
-            padding: 1px 0; 
+            background-color: #eef1f3; /* Lighter than page bg, for contrast */
+            padding: 1px 0; /* To contain margins */
+            margin-top: 2rem;
+        }
+        /* Inner .sv-container for unit tests to match width */
+        #unitTestSectionContainer .sv-container {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            background-color: #ffffff; /* Card like background for tests */
         }
         #unitTestSection {
-            margin-top: 20px; 
-            padding: 20px;
-            border: 1px solid #bdc3c7;
-            border-radius: 8px;
-            background-color: #ffffff; 
+            padding: 20px; /* Original padding */
+            border: none; /* sv-container provides border */
+            border-radius: 0; /* sv-container provides radius */
         }
         #unitTestSection h2 {
             margin-top: 0;
@@ -173,116 +299,116 @@
             background-color: #f8f9fa;
             border-radius: 4px;
         }
-        .test-suite {
-            margin-bottom: 20px;
-        }
+        .test-suite { margin-bottom: 20px; }
         .test-suite h3 {
-            margin-bottom: 8px;
-            color: #2980b9;
-            font-size: 1.2em;
-            font-weight: 500;
-            border-bottom: 1px dashed #e0e0e0;
-            padding-bottom: 5px;
+            margin-bottom: 8px; color: #2980b9; font-size: 1.2em;
+            font-weight: 500; border-bottom: 1px dashed #e0e0e0; padding-bottom: 5px;
         }
         .test-case {
-            padding: 8px 0 8px 15px;
-            border-left: 4px solid #eee;
-            margin-bottom: 5px;
-            font-size: 0.95em;
+            padding: 8px 0 8px 15px; border-left: 4px solid #eee;
+            margin-bottom: 5px; font-size: 0.95em;
         }
-        .test-case.passed {
-            border-left-color: #2ecc71;
-        }
-        .test-case.failed {
-            border-left-color: #e74c3c;
-        }
-        .test-case .status {
-            font-weight: bold;
-            margin-right: 8px;
-        }
+        .test-case.passed { border-left-color: #2ecc71; }
+        .test-case.failed { border-left-color: #e74c3c; }
+        .test-case .status { font-weight: bold; margin-right: 8px; }
         .test-case.passed .status { color: #27ae60; }
         .test-case.failed .status { color: #c0392b; }
 
-        .hidden {
-            display: none !important; 
-        }
+        .hidden { display: none !important; }
 
         /* Accessibility focus styles */
         *:focus-visible {
-            outline: 3px solid #5dade2; 
+            outline: 3px solid #5dade2; /* Consistent blue outline */
             outline-offset: 1px;
         }
-        #testToggleIcon:focus-visible, #closeUnitTestsIcon:focus-visible, #searchButton:focus-visible {
-            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.35);
+        #testToggleIcon:focus-visible, #closeUnitTestsIcon:focus-visible, .sv-button:focus-visible {
+            box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.35); /* Consistent blue shadow */
         }
-        /* #versionInput:focus-visible is handled by :focus styles */
+        /* #versionInput :focus-visible is handled by :focus */
 
     </style>
 </head>
 <body>
     <main>
-        <div class="container">
-            <h1>Software Version Search Portal</h1>
-            <div class="search-form">
-                <input type="text" id="versionInput" placeholder="e.g., 1.2 or .2.3.4" aria-label="Target Version or Pattern">
-                <button id="searchButton">Search</button>
+        <div class="sv-container"> <!-- Changed class -->
+            <div class="sv-header"> <!-- Added for Blazor-style header -->
+                <h1>Software Version Search Portal</h1>
             </div>
-            <div id="errorMessagesContainer"></div> <!-- FR1.5 -->
-            
-            <table id="resultsTable" aria-live="polite">
-                <thead>
-                    <tr>
-                        <th id="col-software-name">Software Name</th> <!-- FR3.1.1 -->
-                        <th id="col-version">Version</th> <!-- FR3.1.2 -->
-                    </tr>
-                </thead>
-                <tbody id="resultsBody">
-                </tbody>
-            </table>
-            <div id="noResultsMessage" class="hidden" role="status">No software items found meeting your criteria.</div> <!-- FR3.3 -->
+            <div class="sv-card-body"> <!-- Added for inner padding -->
+                <p class="sv-description"> <!-- Added description paragraph -->
+                    Enter a version number (e.g., <code>1.2.3</code> or <code>.0.1</code>) to find software products
+                    from our catalog that have a version greater than the one you entered.
+                </p>
+
+                <div class="sv-input-group"> <!-- Changed class -->
+                    <input type="text" id="versionInput" placeholder="e.g., 1.2 or .2.3.4" aria-label="Target Version or Pattern">
+                    <button id="searchButton" class="sv-button">Search</button> <!-- Changed class -->
+                </div>
+                <div id="errorMessagesContainer" class="sv-message-area-container"></div>
+                
+                <!-- Results Section -->
+                <div id="resultsSection">
+                    <!-- Results header will be dynamically added if there are results -->
+                    <table id="resultsTable" aria-live="polite">
+                        <thead>
+                            <tr> 
+                                <!-- TH are hidden by CSS, but kept for structure -->
+                                <th id="col-software-name">Software Name</th>
+                                <th id="col-version">Version</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div id="noResultsMessage" class="sv-no-results hidden" role="status">
+                    <!-- Content for no results will be filled by JS -->
+                </div>
+                <div id="searchFooterNote" class="sv-footer-note hidden">
+                    <!-- Search criteria will be filled by JS -->
+                </div>
+            </div>
         </div>
     </main>
 
-    <div id="unitTestSectionContainer" class="hidden"> <!-- FR5.1 default hidden -->
-        <div class="container"> 
+    <div id="unitTestSectionContainer" class="hidden">
+        <div class="sv-container"> <!-- Unit tests also use sv-container for consistent width -->
             <section id="unitTestSection" aria-labelledby="unitTestTitle">
                 <h2>
-                    <span id="unitTestTitle">Unit Test Results</span> <!-- FR5.4 -->
-                    <span id="closeUnitTestsIcon" role="button" tabindex="0" aria-label="Close unit tests" title="Close unit tests">❌</span> <!-- FR5.5 -->
+                    <span id="unitTestTitle">Unit Test Results</span>
+                    <span id="closeUnitTestsIcon" role="button" tabindex="0" aria-label="Close unit tests" title="Close unit tests">❌</span>
                 </h2>
-                <div id="unitTestSummary" class="unit-test-summary"></div> <!-- FR5.6.4 -->
-                <div id="unitTestContent"></div> <!-- FR5.6.1, FR5.6.2, FR5.6.3 -->
+                <div id="unitTestSummary" class="unit-test-summary"></div>
+                <div id="unitTestContent"></div>
             </section>
         </div>
     </div>
 
-    <footer> <!-- FR4.1 -->
-        <span class="footer-content">created by Fletch with help from Gemini, 2025</span> <!-- FR4.2 -->
-        <span id="testToggleIcon" role="button" tabindex="0" aria-label="Toggle unit test display" title="Toggle unit test display">⚙️</span> <!-- FR4.3 -->
+    <footer>
+        <span class="footer-content">created by Fletch with help from Gemini, 2025</span>
+        <span id="testToggleIcon" role="button" tabindex="0" aria-label="Toggle unit test display" title="Toggle unit test display">⚙️</span>
     </footer>
 
     <script>
-        const softwareData = [ // DR2: Predefined Software Data Set
-            { Name: "MS Word", Version: "13.2.1" },
-            { Name: "AngularJS", Version: "1.7.1" },
-            { Name: "Angular", Version: "13" }, 
-            { Name: "React", Version: "0.0.5" },
-            { Name: "Vue.js", Version: "2.6" },
-            { Name: "Visual Studio", Version: "17.0.31919.166.0" }, 
-            { Name: "Visual Studio", Version: "16.11.9.3.55" },
-            { Name: "Visual Studio Code", Version: "1.63" },
+        const softwareData = [ 
+            { Name: "MS Word", Version: "13.2.1" }, { Name: "AngularJS", Version: "1.7.1" },
+            { Name: "Angular", Version: "13" }, { Name: "React", Version: "0.0.5" },
+            { Name: "Vue.js", Version: "2.6" }, { Name: "Visual Studio", Version: "17.0.31919.166.0" }, 
+            { Name: "Visual Studio", Version: "16.11.9.3.55" }, { Name: "Visual Studio Code", Version: "1.63" },
             { Name: "Blazor", Version: "3.2.0" }
         ];
 
-        let unitTestsRun = false; // FR5.3
+        let unitTestsRun = false;
         let unitTestResultsStore = [];
+        let lastSearchedVersionForDisplay = ""; // To store for footer note
 
-        // DOM Elements
         const versionInput = document.getElementById('versionInput');
         const searchButton = document.getElementById('searchButton');
         const errorMessagesContainer = document.getElementById('errorMessagesContainer');
+        const resultsSection = document.getElementById('resultsSection'); // Wrapper for results header + table
         const resultsBody = document.getElementById('resultsBody');
         const noResultsMessage = document.getElementById('noResultsMessage');
+        const searchFooterNote = document.getElementById('searchFooterNote');
         
         const unitTestSectionContainer = document.getElementById('unitTestSectionContainer');
         const testToggleIcon = document.getElementById('testToggleIcon');
@@ -290,426 +416,308 @@
         const unitTestSummaryDiv = document.getElementById('unitTestSummary');
         const unitTestContentDiv = document.getElementById('unitTestContent');
 
-        // --- Event Listeners ---
         searchButton.addEventListener('click', handleSearch);
-        versionInput.addEventListener('keypress', (event) => { // FR1.3
-            if (event.key === 'Enter') {
-                handleSearch();
-            }
+        versionInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') handleSearch();
         });
-
         testToggleIcon.addEventListener('click', toggleUnitTests);
-        testToggleIcon.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-                toggleUnitTests();
-            }
-        });
+        testToggleIcon.addEventListener('keypress', (event) => { if (event.key === 'Enter' || event.key === ' ') toggleUnitTests(); });
+        closeUnitTestsIcon.addEventListener('click', () => unitTestSectionContainer.classList.add('hidden'));
+        closeUnitTestsIcon.addEventListener('keypress', (event) => { if (event.key === 'Enter' || event.key === ' ') unitTestSectionContainer.classList.add('hidden');});
 
-        closeUnitTestsIcon.addEventListener('click', () => { // FR5.5.1
-            unitTestSectionContainer.classList.add('hidden');
-        });
-        closeUnitTestsIcon.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-                unitTestSectionContainer.classList.add('hidden');
-            }
-        });
-
-
-        // --- Main Search Handler ---
         function handleSearch() {
             const rawInput = versionInput.value;
-            
-            clearErrorMessages(); // FR1.5 (clear on new attempt)
-            clearResults();       // FR3.4 (clear on new attempt)
+            lastSearchedVersionForDisplay = rawInput.trim(); // Store for footer
+
+            clearErrorMessages();
+            clearResultsAndHeader(); // Clears table and results header
 
             const validationErrors = validateInput(rawInput);
             if (validationErrors.length > 0) {
                 displayErrorMessages(validationErrors);
+                updateSearchFooterNote(false); // Show footer note even on error
                 return;
             }
 
             const trimmedInput = rawInput.trim();
             const isSubSequencePattern = trimmedInput.startsWith('.');
             
-            const filteredSoftware = filterSoftware(trimmedInput, isSubSequencePattern);
-            displayResults(filteredSoftware);
+            // Simulate loading for button
+            searchButton.disabled = true;
+            searchButton.innerHTML = '<span class="spinner"></span> Searching...';
+
+            // Simulate async operation
+            setTimeout(() => {
+                const filteredSoftware = filterSoftware(trimmedInput, isSubSequencePattern);
+                displayResults(filteredSoftware);
+                updateSearchFooterNote(true); // Show footer note after search
+
+                searchButton.disabled = false;
+                searchButton.innerHTML = 'Search';
+            }, 200); // Short delay to show spinner
         }
 
-        // --- Input Validation (FR1.4) ---
-        // REVISED validateInput FUNCTION:
         function validateInput(inputValue) {
             const errors = [];
             const trimmedValue = inputValue.trim();
 
-            // FR1.4.1: Empty
-            if (trimmedValue === '') {
-                errors.push("Please enter a version number.");
-                return errors; // Early exit
-            }
-
-            // FR1.4.4 (partial - single period) / FR1.4.5.2.2 (single period invalid)
-            if (trimmedValue === '.') {
-                errors.push("A single period '.' is not a valid input.");
-                return errors; // Early exit, this is a specific invalid case
-            }
-
-            // FR1.4.2: Invalid characters (non-digits, non-periods)
-            if (!/^[0-9.]+$/.test(trimmedValue)) {
-                errors.push("Input can only contain numbers and periods.");
-            }
-
-            // FR1.4.4: Ends with period (but not if it's just ".")
-            if (trimmedValue.endsWith('.') && trimmedValue !== '.') { // Second condition redundant due to early exit for "."
-                errors.push("Input cannot end with a period.");
-            }
-
+            if (trimmedValue === '') { errors.push("Please enter a version number."); return errors; }
+            if (trimmedValue === '.') { errors.push("A single period '.' is not a valid input."); return errors; }
+            if (!/^[0-9.]+$/.test(trimmedValue)) errors.push("Input can only contain numbers and periods.");
+            if (trimmedValue.endsWith('.') && trimmedValue !== '.') errors.push("Input cannot end with a period.");
+            
             const isSubSequence = trimmedValue.startsWith('.');
             const relevantStringToSplit = isSubSequence ? trimmedValue.substring(1) : trimmedValue;
             
-            // `split` on an empty string `relevantStringToSplit` (e.g. from input ".") results in `[""]`.
-            // This is fine as the `trimmedValue === '.'` check handles it.
-            const stringParts = relevantStringToSplit.split('.');
-
-            let hasEmptySegmentsError = false;
-            // Check for empty segments (which can arise from '..' or leading/trailing periods if not caught elsewhere)
-            // FR1.4.5.2.2 (U_parts must not be empty also implies segments of U_parts not empty)
-            // FR1.4.6 (implicitly, parts cannot be empty if they must consist of digits)
-            if (stringParts.some(p => p === '')) {
-                 // This check covers cases like "1..2" -> ["1","","2"] or ".1..2" -> uParts ["1","","2"]
-                if (isSubSequence) {
-                    // This handles inputs like ".1..2" or "..2" (which becomes uParts ["", "2"])
-                    if (!errors.some(e => e.startsWith("Sub-sequence pattern segments cannot be empty"))) { // Avoid duplicates if already added
-                        errors.push("Sub-sequence pattern segments cannot be empty (e.g. '.1..2').");
-                    }
-                    hasEmptySegmentsError = true;
-                } else { // Standard pattern like "1..2"
-                    if (!errors.some(e => e.startsWith("Version segments cannot be empty"))) { // Avoid duplicates
-                        errors.push("Version segments cannot be empty (e.g. '1..2').");
-                    }
+            if (relevantStringToSplit === '' && isSubSequence) { // e.g. input was "." already handled, or ". " that trims to "."
+                // This case should ideally be caught by the initial "." check if trim results in "."
+                // If `relevantStringToSplit` is empty after removing leading '.', it means input was just '.'
+                // This is mostly a defensive check. The single period check is primary.
+            } else {
+                const stringParts = relevantStringToSplit.split('.');
+                let hasEmptySegmentsError = false;
+                if (stringParts.some(p => p === '')) {
+                    const msg = isSubSequence ? "Sub-sequence pattern segments cannot be empty (e.g. '.1..2')." : "Version segments cannot be empty (e.g. '1..2').";
+                    if (!errors.includes(msg)) errors.push(msg);
                     hasEmptySegmentsError = true;
                 }
-            }
-            
-            // FR1.4.3: Consecutive periods - Add only if a more specific empty segment error wasn't already added.
-            // The presence of '..' will lead to empty segments handled above.
-            // This rule is somewhat redundant if empty segment check is robust but kept for explicit PRD mapping.
-            if (trimmedValue.includes('..')) {
-                if (!hasEmptySegmentsError && !errors.includes("Input cannot contain consecutive periods.")) {
+                if (trimmedValue.includes('..') && !hasEmptySegmentsError && !errors.includes("Input cannot contain consecutive periods.")) {
                     errors.push("Input cannot contain consecutive periods.");
                 }
-            }
-
-            // FR1.4.6: Each part must consist only of digits (for non-empty parts).
-            for (const part of stringParts) {
-                if (part !== '' && !/^\d+$/.test(part)) { // Only check non-empty parts
-                    // This error might be redundant if FR1.4.2 is comprehensive, but FR1.4.6 is specific about *parts*.
-                    if (!errors.includes("Input can only contain numbers and periods.") &&
-                        !errors.includes("Each version part between periods must consist of digits only.")) {
-                         errors.push("Each version part between periods must consist of digits only.");
-                    }
-                    break; 
-                }
-            }
-
-            // FR1.4.5: Max parts validation (using stringParts which represent U_parts for sub-sequence)
-            if (isSubSequence) {
-                // FR1.4.5.2.1: Max 4 explicit numeric parts for U_parts.
-                // `stringParts` are the U_parts here.
-                // If `relevantStringToSplit` was empty (e.g. from input "."), `stringParts` would be `[""]`.
-                // The `trimmedValue === '.'` check prevents this path for ".".
-                if (relevantStringToSplit !== "" && stringParts.length > 4) { 
-                    if (!errors.includes("Sub-sequence pattern can have at most 4 numeric parts after the initial period.")) {
-                         errors.push("Sub-sequence pattern can have at most 4 numeric parts after the initial period.");
+                for (const part of stringParts) {
+                    if (part !== '' && !/^\d+$/.test(part)) {
+                        if (!errors.includes("Input can only contain numbers and periods.") &&
+                            !errors.includes("Each version part between periods must consist of digits only.")) {
+                             errors.push("Each version part between periods must consist of digits only.");
+                        }
+                        break; 
                     }
                 }
-                // FR1.4.5.2.2: U_parts must not be empty. If relevantStringToSplit is "", it's handled by "." check.
-                // If relevantStringToSplit is not "" but all its parts are somehow empty (e.g. ". "), this isn't explicitly caught here
-                // but the `stringParts.some(p => p === '')` would have triggered "Sub-sequence pattern segments cannot be empty".
-            } else { // Standard Version Pattern
-                // FR1.4.5.1: Max 5 parts
-                if (stringParts.length > 5) {
-                    if (!errors.includes("Standard version input can have at most 5 parts (e.g., 1.2.3.4.5).")) {
-                         errors.push("Standard version input can have at most 5 parts (e.g., 1.2.3.4.5).");
+                if (isSubSequence) {
+                    if (relevantStringToSplit !== "" && stringParts.length > 4) { 
+                        if (!errors.includes("Sub-sequence pattern can have at most 4 numeric parts after the initial period.")) {
+                             errors.push("Sub-sequence pattern can have at most 4 numeric parts after the initial period.");
+                        }
+                    }
+                } else {
+                    if (stringParts.length > 5) {
+                        if (!errors.includes("Standard version input can have at most 5 parts (e.g., 1.2.3.4.5).")) {
+                             errors.push("Standard version input can have at most 5 parts (e.g., 1.2.3.4.5).");
+                        }
                     }
                 }
             }
-            
-            return [...new Set(errors)]; // Return unique errors
+            return [...new Set(errors)];
         }
 
-
-        // --- Version Parsing (FR2.2, FR2.3) ---
         function parseVersionString(versionStr, targetLength = 5, applyTargetLengthAndPad = true) {
             if (typeof versionStr !== 'string') versionStr = '';
-
             const partsStr = versionStr.split('.');
-            let numericParts = [];
-
-            for (let i = 0; i < partsStr.length; i++) {
-                const num = parseInt(partsStr[i], 10);
-                numericParts.push(partsStr[i] === '' || isNaN(num) ? 0 : num); // FR2.2.3
-            }
-
+            let numericParts = partsStr.map(part => (part === '' || isNaN(parseInt(part, 10)) ? 0 : parseInt(part, 10)));
             if (applyTargetLengthAndPad) {
-                while (numericParts.length < targetLength) { 
-                    numericParts.push(0);
-                }
-                if (numericParts.length > targetLength) { 
-                    numericParts = numericParts.slice(0, targetLength);
-                }
+                while (numericParts.length < targetLength) numericParts.push(0);
+                if (numericParts.length > targetLength) numericParts = numericParts.slice(0, targetLength);
             }
             return numericParts;
         }
 
-        // --- Comparison Logic ---
         function isLexicographicallyStrictlyGreater(v1_parts, v2_parts) {
             const len = Math.min(v1_parts.length, v2_parts.length); 
             for (let i = 0; i < len; i++) {
                 if (v1_parts[i] > v2_parts[i]) return true;
                 if (v1_parts[i] < v2_parts[i]) return false;
             }
-            return false; 
+            return v1_parts.length > v2_parts.length && v1_parts.slice(len).some(p => p > 0); // Check if v1 is longer and has non-zero parts
         }
 
-
-        // --- Filtering Logic (FR2) ---
         function filterSoftware(userInputString, isSubSequencePattern) {
-            return softwareData.filter(item => {
-                const s_parts = parseVersionString(item.Version, 5, true); // FR2.3
-
+             return softwareData.filter(item => {
+                const s_parts = parseVersionString(item.Version, 5, true);
                 if (isSubSequencePattern) {
-                    // FR2.4.2, FR2.6
                     const u_parts_string = userInputString.substring(1);
-                    const u_parts = parseVersionString(u_parts_string, 0, false); // FR2.6.1
+                    if (u_parts_string === '') return false; // e.g. if input was just "." (should be caught by validation)
+                    const u_parts = parseVersionString(u_parts_string, 0, false);
+                    if (u_parts.length === 0 || u_parts.some(p => isNaN(p))) return false; 
 
-                    if (u_parts.length === 0) return false; 
-
-                    // FR2.6.3
                     for (let i = 0; i <= s_parts.length - u_parts.length; i++) {
                         const subArrayFrom_s_parts = s_parts.slice(i, i + u_parts.length);
-                        
-                        // Condition A (FR2.6.4.A)
-                        let exactMatch = true;
-                        for (let k = 0; k < u_parts.length; k++) {
-                            if (subArrayFrom_s_parts[k] !== u_parts[k]) {
-                                exactMatch = false;
-                                break;
-                            }
-                        }
-
+                        let exactMatch = subArrayFrom_s_parts.every((val, index) => val === u_parts[index]);
                         if (exactMatch) {
-                            const match_index = i;
-                            // Condition B (FR2.6.4.B)
-                            if (match_index === 0) { 
-                                continue; 
-                            }
-
-                            const s_prefix = s_parts.slice(0, match_index);
-                            const is_s_prefix_greater_than_zeros = s_prefix.some(p => p > 0);
-
-                            if (is_s_prefix_greater_than_zeros) {
-                                return true; 
-                            }
+                            if (i === 0) continue; 
+                            const s_prefix = s_parts.slice(0, i);
+                            if (s_prefix.some(p => p > 0)) return true; 
                         }
                     }
                     return false; 
                 } else {
-                    // FR2.4.1
-                    const user_parsed_version = parseVersionString(userInputString, 5, true); // FR2.2.1
+                    const user_parsed_version = parseVersionString(userInputString, 5, true);
                     return isLexicographicallyStrictlyGreater(s_parts, user_parsed_version);
                 }
             });
         }
 
-        // --- Display Logic (FR3) ---
         function displayResults(filteredItems) {
             resultsBody.innerHTML = ''; 
+            removeResultsHeader(); // Ensure header is removed if no results
 
             if (filteredItems.length === 0) {
-                noResultsMessage.classList.remove('hidden'); // FR3.3
+                noResultsMessage.classList.remove('hidden');
+                // Set content for no results message for clarity
+                const noResultsHeading = noResultsMessage.querySelector('.heading') || document.createElement('div');
+                noResultsHeading.className = 'heading'; // Ensure class if creating
+                noResultsHeading.textContent = 'No Matches Found';
+                
+                const noResultsText = noResultsMessage.querySelector('.text') || document.createElement('p');
+                noResultsText.className = 'text'; // Ensure class
+                noResultsText.innerHTML = `No software products found with a version greater than "<strong>${lastSearchedVersionForDisplay || 'the entered criteria'}</strong>".`;
+                
+                // Append if newly created
+                if (!noResultsMessage.querySelector('.heading')) noResultsMessage.appendChild(noResultsHeading);
+                if (!noResultsMessage.querySelector('.text')) noResultsMessage.appendChild(noResultsText);
+
                 return;
             }
             noResultsMessage.classList.add('hidden');
+            addResultsHeader(); // Add header only if there are results
 
-            // FR3.2
             filteredItems.sort((a, b) => {
-                // FR3.2.1
-                const nameA = a.Name.toLowerCase();
-                const nameB = b.Name.toLowerCase();
-                if (nameA < nameB) return -1;
-                if (nameA > nameB) return 1;
-
-                // FR3.2.2
-                const versionA_parts = parseVersionString(a.Version, 5, true);
-                const versionB_parts = parseVersionString(b.Version, 5, true);
-                for (let i = 0; i < 5; i++) {
-                    if (versionA_parts[i] < versionB_parts[i]) return -1;
-                    if (versionA_parts[i] > versionB_parts[i]) return 1;
-                }
+                const nameA = a.Name.toLowerCase(); const nameB = b.Name.toLowerCase();
+                if (nameA < nameB) return -1; if (nameA > nameB) return 1;
+                const vA = parseVersionString(a.Version, 5, true); const vB = parseVersionString(b.Version, 5, true);
+                for (let i = 0; i < 5; i++) { if (vA[i] < vB[i]) return -1; if (vA[i] > vB[i]) return 1; }
                 return 0;
             });
 
-            // FR3.1
             filteredItems.forEach(item => {
                 const row = resultsBody.insertRow();
-                const cellName = row.insertCell();
-                const cellVersion = row.insertCell();
-                cellName.textContent = item.Name;
-                cellVersion.textContent = item.Version;
+                const cellContent = row.insertCell(); // Use a single cell for flex layout
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'sv-results-list name'; // Added class
+                nameSpan.textContent = item.Name;
+
+                const versionSpan = document.createElement('span');
+                versionSpan.className = 'sv-results-list version'; // Added class
+                versionSpan.textContent = item.Version;
+                
+                cellContent.appendChild(nameSpan);
+                cellContent.appendChild(versionSpan);
             });
         }
+        
+        function addResultsHeader() {
+            if (!document.getElementById('dynamicResultsHeader')) {
+                const header = document.createElement('h3');
+                header.className = 'sv-results-header';
+                header.id = 'dynamicResultsHeader';
+                header.textContent = 'Matching Software';
+                resultsSection.insertBefore(header, resultsSection.firstChild);
+            }
+        }
+        function removeResultsHeader() {
+            const header = document.getElementById('dynamicResultsHeader');
+            if (header) header.remove();
+        }
 
-        function clearResults() {
+        function clearResultsAndHeader() {
             resultsBody.innerHTML = '';
             noResultsMessage.classList.add('hidden');
+            removeResultsHeader();
+            searchFooterNote.classList.add('hidden');
         }
+        
+        function updateSearchFooterNote(searchWasSuccessful) {
+            if(lastSearchedVersionForDisplay || !searchWasSuccessful) { // Show if there was input or an error occurred
+                searchFooterNote.textContent = `Search criteria: ${lastSearchedVersionForDisplay || "N/A"}`;
+                searchFooterNote.classList.remove('hidden');
+            } else {
+                searchFooterNote.classList.add('hidden');
+            }
+        }
+
 
         function displayErrorMessages(errors) {
             errorMessagesContainer.innerHTML = ''; 
             if (errors.length > 0) {
                 const ul = document.createElement('ul');
-                errors.forEach(err => {
-                    const li = document.createElement('li');
-                    li.textContent = err;
-                    ul.appendChild(li);
-                });
+                errors.forEach(err => { const li = document.createElement('li'); li.textContent = err; ul.appendChild(li); });
                 const div = document.createElement('div');
-                div.className = 'error-message';
+                div.className = 'sv-message-area error'; // Use new class
                 div.appendChild(ul);
                 errorMessagesContainer.appendChild(div);
             }
         }
+        function clearErrorMessages() { errorMessagesContainer.innerHTML = ''; }
 
-        function clearErrorMessages() {
-            errorMessagesContainer.innerHTML = '';
-        }
-
-        // --- Unit Test Logic (FR5) ---
-        function toggleUnitTests() { // FR5.2
+        function toggleUnitTests() {
             const isHidden = unitTestSectionContainer.classList.toggle('hidden');
-            if (!isHidden && !unitTestsRun) { // FR5.2.1, FR5.3
-                runUnitTests();
-                displayUnitTests();
-                unitTestsRun = true;
-            }
+            if (!isHidden && !unitTestsRun) { runUnitTests(); displayUnitTests(); unitTestsRun = true; }
         }
-
-        function runUnitTests() {
+        function runUnitTests() { /* ... (same as before, ensure it uses updated parseVersionString/isLexicographicallyStrictlyGreater if they changed for tests) ... */ 
             unitTestResultsStore = []; 
             const addTest = (suite, caseName, passCondition) => {
-                let passed = false;
-                let errorMsg = null;
-                try {
-                    passed = passCondition();
-                } catch (e) {
-                    errorMsg = e.message;
-                    passed = false;
-                }
+                let passed = false; let errorMsg = null;
+                try { passed = passCondition(); } catch (e) { errorMsg = e.message; passed = false; }
                 unitTestResultsStore.push({ suite, caseName, passed, errorMsg });
             };
-
-            // Suite: Input Validation
             addTest("Input Validation", "Empty input", () => validateInput("").includes("Please enter a version number."));
             addTest("Input Validation", "Single period input", () => validateInput(".").includes("A single period '.' is not a valid input."));
             addTest("Input Validation", "Invalid characters", () => validateInput("1.a.2").includes("Input can only contain numbers and periods."));
-            addTest("Input Validation", "Consecutive periods (generic)", () => validateInput("1...2").includes("Input cannot contain consecutive periods.") || validateInput("1...2").includes("Version segments cannot be empty (e.g. '1..2')."));
+            addTest("Input Validation", "Consecutive periods (causes empty segment)", () => validateInput("1..2").includes("Version segments cannot be empty (e.g. '1..2')."));
             addTest("Input Validation", "Ends with period", () => validateInput("1.2.").includes("Input cannot end with a period."));
             addTest("Input Validation", "Standard: Too many parts", () => validateInput("1.2.3.4.5.6").includes("Standard version input can have at most 5 parts (e.g., 1.2.3.4.5)."));
             addTest("Input Validation", "Standard: Valid max parts", () => validateInput("1.2.3.4.5").length === 0);
             addTest("Input Validation", "Sub-sequence: Too many parts", () => validateInput(".1.2.3.4.5").includes("Sub-sequence pattern can have at most 4 numeric parts after the initial period."));
             addTest("Input Validation", "Sub-sequence: Valid max parts", () => validateInput(".1.2.3.4").length === 0);
-            addTest("Input Validation", "Sub-sequence: Empty U_parts (after initial period - e.g. just '.')", () => validateInput(".").includes("A single period '.' is not a valid input.")); 
             addTest("Input Validation", "Sub-sequence: Empty segment e.g. '.1..2'", () => validateInput(".1..2").includes("Sub-sequence pattern segments cannot be empty (e.g. '.1..2')."));
-            addTest("Input Validation", "Standard: Empty segment e.g. '1..2'", () => validateInput("1..2").includes("Version segments cannot be empty (e.g. '1..2')."));
             addTest("Input Validation", "Valid simple input '1.2'", () => validateInput("1.2").length === 0);
             addTest("Input Validation", "Valid simple sub-sequence '.2'", () => validateInput(".2").length === 0);
 
-
-            // Suite: Version Parsing
             addTest("Version Parsing", "Standard '1.2' to 5 parts", () => JSON.stringify(parseVersionString("1.2", 5, true)) === JSON.stringify([1,2,0,0,0]));
             addTest("Version Parsing", "Standard '13' to 5 parts", () => JSON.stringify(parseVersionString("13", 5, true)) === JSON.stringify([13,0,0,0,0]));
-            addTest("Version Parsing", "Standard '1.2.3.4.5.6' truncates to 5 parts", () => JSON.stringify(parseVersionString("1.2.3.4.5.6", 5, true)) === JSON.stringify([1,2,3,4,5]));
-            addTest("Version Parsing", "Sub-sequence '.1.2' (no padding/target)", () => JSON.stringify(parseVersionString("1.2", 0, false)) === JSON.stringify([1,2]));
-            addTest("Version Parsing", "Non-numeric part '1.a.2' (FR2.2.3)", () => JSON.stringify(parseVersionString("1.a.2", 5, true)) === JSON.stringify([1,0,2,0,0]));
-            addTest("Version Parsing", "Empty part '1..2' (FR2.2.3 in parsing)", () => JSON.stringify(parseVersionString("1..2", 5, true)) === JSON.stringify([1,0,2,0,0]));
+            addTest("Version Parsing", "Standard '1.2.3.4.5.6' truncates", () => JSON.stringify(parseVersionString("1.2.3.4.5.6", 5, true)) === JSON.stringify([1,2,3,4,5]));
+            addTest("Version Parsing", "Sub-sequence '.1.2' (raw parts)", () => JSON.stringify(parseVersionString("1.2", 0, false)) === JSON.stringify([1,2]));
+            addTest("Version Parsing", "Non-numeric part '1.a.2'", () => JSON.stringify(parseVersionString("1.a.2", 5, true)) === JSON.stringify([1,0,2,0,0]));
+            addTest("Version Parsing", "Empty part '1..2'", () => JSON.stringify(parseVersionString("1..2", 5, true)) === JSON.stringify([1,0,2,0,0]));
 
-
-            // Suite: Standard Comparison (isLexicographicallyStrictlyGreater)
             addTest("Standard Comparison", "'1.2.3' > '1.2.2'", () => isLexicographicallyStrictlyGreater([1,2,3,0,0], [1,2,2,0,0]));
             addTest("Standard Comparison", "'1.2.3' not > '1.2.3'", () => !isLexicographicallyStrictlyGreater([1,2,3,0,0], [1,2,3,0,0]));
             addTest("Standard Comparison", "'1.2.3' not > '1.2.4'", () => !isLexicographicallyStrictlyGreater([1,2,3,0,0], [1,2,4,0,0]));
             addTest("Standard Comparison", "'2.0.0' > '1.9.9'", () => isLexicographicallyStrictlyGreater([2,0,0,0,0], [1,9,9,0,0]));
+            addTest("Standard Comparison", "'1.0.0.0.1' > '1'", () => isLexicographicallyStrictlyGreater([1,0,0,0,1], [1,0,0,0,0]));
 
-            // Suite: Sub-sequence Comparison (simplified direct test)
+
             const testSubsequence = (sVersion, uInput, expected) => {
                 const s_parts = parseVersionString(sVersion, 5, true);
                 const u_parts_string = uInput.substring(1);
+                 if (u_parts_string === '') return false === expected; // Should be caught by validation
                 const u_parts = parseVersionString(u_parts_string, 0, false);
-                if (u_parts.length === 0) return false === expected;
-
+                if (u_parts.length === 0 || u_parts.some(p => isNaN(p))) return false === expected;
                 for (let i = 0; i <= s_parts.length - u_parts.length; i++) {
                     const subArray = s_parts.slice(i, i + u_parts.length);
                     let exactMatch = subArray.every((val, index) => val === u_parts[index]);
-                    if (exactMatch) {
-                        if (i === 0) continue; 
-                        const s_prefix = s_parts.slice(0, i);
-                        if (s_prefix.some(p => p > 0)) return true === expected;
-                    }
-                }
-                return false === expected;
+                    if (exactMatch) { if (i === 0) continue; const s_prefix = s_parts.slice(0, i); if (s_prefix.some(p => p > 0)) return true === expected; }
+                } return false === expected;
             };
             addTest("Sub-sequence Comparison", "S:'1.4.2.0.0', U:'.4.2' -> true", () => testSubsequence("1.4.2", ".4.2", true));
             addTest("Sub-sequence Comparison", "S:'0.4.2.0.0', U:'.4.2' -> false (prefix not > 0)", () => testSubsequence("0.4.2", ".4.2", false));
             addTest("Sub-sequence Comparison", "S:'4.2.0.0.0', U:'.4.2' -> false (match_index=0)", () => testSubsequence("4.2", ".4.2", false));
             addTest("Sub-sequence Comparison", "S:'1.2.3.4.5', U:'.3.4' -> true", () => testSubsequence("1.2.3.4.5", ".3.4", true));
-            addTest("Sub-sequence Comparison", "S:'1.2.3.4.5', U:'.5' (match at end)", () => testSubsequence("1.2.3.4.5", ".5", true));
+            addTest("Sub-sequence Comparison", "S:'1.2.3.4.5', U:'.5' -> true", () => testSubsequence("1.2.3.4.5", ".5", true));
         }
-
-        function displayUnitTests() {
-            unitTestContentDiv.innerHTML = ''; 
-            unitTestSummaryDiv.innerHTML = '';
-
-            let totalTests = unitTestResultsStore.length;
-            let passedTests = unitTestResultsStore.filter(r => r.passed).length;
-            let failedTests = totalTests - passedTests;
-
-            // FR5.6.4
+        function displayUnitTests() { /* ... (same as before) ... */
+            unitTestContentDiv.innerHTML = ''; unitTestSummaryDiv.innerHTML = '';
+            let totalTests = unitTestResultsStore.length; let passedTests = unitTestResultsStore.filter(r => r.passed).length; let failedTests = totalTests - passedTests;
             unitTestSummaryDiv.textContent = `Total Tests: ${totalTests}, Passed: ${passedTests}, Failed: ${failedTests}`;
-
-            // FR5.6.1
-            const suites = {};
-            unitTestResultsStore.forEach(result => {
-                if (!suites[result.suite]) {
-                    suites[result.suite] = [];
-                }
-                suites[result.suite].push(result);
-            });
-
+            const suites = {}; unitTestResultsStore.forEach(result => { if (!suites[result.suite]) suites[result.suite] = []; suites[result.suite].push(result); });
             for (const suiteName in suites) {
-                const suiteDiv = document.createElement('div');
-                suiteDiv.className = 'test-suite';
-                
-                const suiteTitle = document.createElement('h3');
-                suiteTitle.textContent = suiteName;
-                suiteDiv.appendChild(suiteTitle);
-
-                suites[suiteName].forEach(tc => { // FR5.6.2
-                    const caseDiv = document.createElement('div');
-                    caseDiv.className = `test-case ${tc.passed ? 'passed' : 'failed'}`;
-                    
-                    const statusSpan = document.createElement('span');
-                    statusSpan.className = 'status';
-                    statusSpan.textContent = tc.passed ? 'PASS' : 'FAIL'; // FR5.6.3
-                    
-                    caseDiv.appendChild(statusSpan);
-                    caseDiv.appendChild(document.createTextNode(tc.caseName));
-                    if (!tc.passed && tc.errorMsg) {
-                        const errorDetail = document.createElement('small');
-                        errorDetail.textContent = ` (Error: ${tc.errorMsg})`;
-                        errorDetail.style.display = 'block';
-                        errorDetail.style.marginLeft = '20px';
-                        caseDiv.appendChild(errorDetail);
-                    }
+                const suiteDiv = document.createElement('div'); suiteDiv.className = 'test-suite';
+                const suiteTitle = document.createElement('h3'); suiteTitle.textContent = suiteName; suiteDiv.appendChild(suiteTitle);
+                suites[suiteName].forEach(tc => {
+                    const caseDiv = document.createElement('div'); caseDiv.className = `test-case ${tc.passed ? 'passed' : 'failed'}`;
+                    const statusSpan = document.createElement('span'); statusSpan.className = 'status'; statusSpan.textContent = tc.passed ? 'PASS' : 'FAIL'; 
+                    caseDiv.appendChild(statusSpan); caseDiv.appendChild(document.createTextNode(tc.caseName));
+                    if (!tc.passed && tc.errorMsg) { const ed = document.createElement('small'); ed.textContent = ` (Err: ${tc.errorMsg})`;ed.style.display='block';ed.style.marginLeft='20px';caseDiv.appendChild(ed);}
                     suiteDiv.appendChild(caseDiv);
                 });
                 unitTestContentDiv.appendChild(suiteDiv);
