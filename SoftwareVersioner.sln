@@ -19,6 +19,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareVersioner", "Softwa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareVersioner.Core", "SoftwareVersioner.Core\SoftwareVersioner.Core.csproj", "{BC8DC923-4AD1-4213-A229-9CA1A5459589}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AdditionalFiles", "AdditionalFiles", "{3461FB0F-CF64-42E0-A448-4D3CCEA8F2C4}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		Emergent PRD.pdf = Emergent PRD.pdf
+		readme.md = readme.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

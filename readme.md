@@ -1,7 +1,6 @@
 # Software Version Comparator (Emergent Software Challenge)
 
-![Software Version Comparator Screenshot](https://via.placeholder.com/700x400.png?text=App+Screenshot+Here)
-*(Suggestion: Replace the placeholder above with an actual screenshot of your Blazor app or the static HTML page)*
+![Software Version Comparator Screenshot](app-screenshot.png)
 
 This repository contains a solution to the Emergent Software code challenge. The project implements a "Software Version Comparator" application with two distinct front-end versions:
 
