@@ -13,7 +13,7 @@ This repository contains a solution to the Emergent Software code challenge. The
 
 You can try out the static HTML/JavaScript version of the comparator here:
 
-**➡️ Visit [https://jinnfletch.github.io/TestTemplate/](https://jinnfletch.github.io/TestTemplate/) to test the static version!**
+**➡️ Visit [https://jinnfletch.github.io/TestTemplate/](https://jinnfletch.github.io/TestTemplate/) to test the static version! (Click the footer cog!)**
 
 ---
 
@@ -67,8 +67,6 @@ The Blazor solution is structured with a separation of concerns:
 *   **`SoftwareVersioner.Tests`**:
     *   xUnit tests for the client-side logic in `FunctionalSvc.cs`.
 
-*(Note: The `.Shared` and `.Data.Core` projects from the original template are not used in this solution as per refined requirements.)*
-
 ---
 
 ## 🧪 Running the Blazor Version Locally
@@ -83,7 +81,7 @@ The Blazor solution is structured with a separation of concerns:
 
 ## 🔧 Static HTML/JS/CSS Version
 
-The static version is a single `index.html` file (typically located in the `/docs` folder of this repository for GitHub Pages hosting). It implements the same core logic directly in JavaScript within the HTML file.
+The static version is a single `index.html` file (typically located in the `/docs` folder of this repository for GitHub Pages hosting). It implements the same core logic directly in JavaScript within the HTML file.  Click the cog in the [footer of the static demo](https://jinnfletch.github.io/TestTemplate/)!
 
 ---
 
